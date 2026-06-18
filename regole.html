@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Regole di Bordo — Corsica Experience</title>
+  <title>Regole di Bordo — Golfo dei Poeti Weekend</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,41 +15,52 @@
     <div class="nav-inner">
       <a class="nav-logo" href="index.html">
         <span class="logo-icon">—</span>
-        <span>Corsica Experience</span>
+        <span>Golfo dei Poeti Weekend</span>
       </a>
-      <div class="nav-links">
+            <div class="nav-links">
         <a href="index.html">Home</a>
-        <a href="index.html#itinerario">Itinerario</a>
-        <a href="index.html#meteo">Meteo</a>
-        <a href="cambusa.html">Cambusa</a>
-        <a href="briefing.html">Briefing</a>
-        <a href="crewlist.html" class="nav-cta">Crew List</a>
-        <a href="rotta.html">🗺️ Rotta</a>
-      </div>
-      <button class="nav-burger" id="navBurger" aria-label="Menu">
+        <a href="esperienza.html">L'Esperienza</a>
+        <a href="organizzazione.html">Organizzazione</a>
+        <a href="sicurezza.html">Sicurezza</a>
+        <div class="dropdown" id="navDropdown">
+          <a href="javascript:void(0)" class="dropdown-toggle">Strumenti <span style="font-size:.7em">▼</span></a>
+          <div class="dropdown-menu">
+            <a href="checkin.html">Check-in Barca</a>
+            <a href="inventario.html">Inventario</a>
+            <a href="meteo.html">Meteo Operativo</a>
+          </div>
+        </div>
+      </div><button class="nav-burger" id="navBurger" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
     </div>
-    <div class="nav-mobile" id="navMobile">
+        <div class="nav-mobile" id="navMobile">
       <a href="index.html">Home</a>
-      <a href="index.html#itinerario">Itinerario</a>
-      <a href="index.html#meteo">Meteo</a>
+      <a href="esperienza.html">L'Esperienza</a>
+      <a href="organizzazione.html">Organizzazione</a>
+      <a href="sicurezza.html">Sicurezza</a>
+      <a href="valigia.html">Valigia Intelligente</a>
       <a href="cambusa.html">Cambusa</a>
-      <a href="briefing.html">Briefing</a>
-      <a href="crewlist.html">Crew List</a>
-      <a href="rotta.html">🗺️ Rotta</a>
+      <a href="atlantica.html#crewlist">Crew List</a>
+      <a href="meteo.html">Meteo</a>
+      <a href="rotta.html">Rotta</a>
+      <a href="checkin.html">Check-in Barca</a>
+      <a href="inventario.html">Inventario</a>
     </div>
   </nav>
 
   <!-- PAGE HERO -->
   <div class="page-hero">
-    <div class="page-hero-bg" style="background-image:url('img/hero.jpg')"></div>
+    <video class="page-hero-video" autoplay muted loop playsinline poster="img/portovenere.jpg">
+      <source src="img/mare.mp4" type="video/mp4">
+    </video>
+    <div class="page-hero-bg" style="background-color:#0b3c5d;"></div>
     <div class="page-hero-overlay"></div>
     <div class="page-hero-content">
       <a href="index.html" class="back-link">← Torna alla home</a>
       <span class="label light">A Bordo</span>
       <h1 class="page-hero-title">Regole di Bordo</h1>
-      <p class="page-hero-sub">Prima di salpare, leggi con attenzione. La sicurezza e il rispetto sono la base di un viaggio straordinario.</p>
+      <p class="page-hero-sub">Prima di salpare, leggi con attenzione. La sicurezza e il rispetto sono la base di un weekend indimenticabile.</p>
     </div>
   </div>
 
@@ -57,7 +68,7 @@
   <div style="background:rgba(28,167,168,.1);border-bottom:1px solid rgba(28,167,168,.2);">
     <div class="container" style="padding:20px 0;text-align:center;">
       <p style="color:rgba(255,255,255,.8);margin:0;font-size:.95rem;">
-        📋 <strong>Nuovo:</strong> Leggi il <a href="briefing.html" style="color:var(--turq);font-weight:700;">Briefing Pre-Crociera</a> completo con tutte le procedure di sicurezza, istruzioni dettagliate e foto delle dotazioni.
+        📋 <strong>Nuovo:</strong> Leggi il <a href="briefing.html" style="color:var(--turq);font-weight:700;">Briefing Pre-Crociera</a> completo con procedure di sicurezza, istruzioni dettagliate e dotazioni.
       </p>
     </div>
   </div>
@@ -180,7 +191,7 @@
         <div class="pg-col reveal-left">
           <h4>Essenziali</h4>
           <ul>
-            <li>Costume da bagno (almeno 3)</li>
+            <li>Costume da bagno (almeno 2)</li>
             <li>Scarpe da barca (suole bianche)</li>
             <li>Crema solare alta protezione</li>
             <li>Occhiali da sole polarizzati</li>
@@ -228,7 +239,7 @@
         </div>
         <div class="accetta-status" id="accettaStatus" style="display:none">
           <span class="accetta-badge">Regole accettate</span>
-          <a href="crewlist.html" class="btn-primary" style="margin-top:0">Compila la Crew List &rarr;</a>
+          <a href="atlantica.html#crewlist" class="btn-primary" style="margin-top:0">Compila la Crew List &rarr;</a>
         </div>
       </div>
     </div>
@@ -236,14 +247,14 @@
 
   <footer class="footer">
     <div class="container">
-      <div class="footer-logo">Corsica Experience</div>
-      <p>Porto Mirabello · La Spezia · Weekend 26–28 Giugno 2026</p>
+      <div class="footer-logo">Golfo dei Poeti Weekend</div>
+      <p>Porto Venere · 27-28 Giugno 2026</p>
       <div class="footer-links">
         <a href="index.html">Home</a>
-        <a href="index.html#meteo">Meteo</a>
-        <a href="crewlist.html">Crew List</a>
+        <a href="atlantica.html">Atlantica</a>
+        <a href="atlantica.html#crewlist">Crew List</a>
       </div>
-      <p class="footer-copy">© 2026 Corsica Experience — Tutti i diritti riservati</p>
+      <p class="footer-copy">© 2026 Golfo dei Poeti Weekend — Tutti i diritti riservati</p>
     </div>
   </footer>
 

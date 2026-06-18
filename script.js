@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════
-   CORSICA SAILING EXPERIENCE — Script
+   GOLFO DEI POETI WEEKEND — Script
    ══════════════════════════════════════════════════ */
 
 /* ── Google Sheets API ──────────────────────────── */
@@ -11,13 +11,13 @@ const ADMIN_PASSWORDS = {
 };
 
 /* ── Stato live equipaggio ──────────────────────── */
-async function loadCrewStatus(boat, listId, countId) {
-  const listEl  = document.getElementById(listId  || 'crewStatusList');
-  const countEl = document.getElementById(countId || 'crewStatusCount');
+async function loadCrewStatus() {
+  const listEl  = document.getElementById('crewStatusList');
+  const countEl = document.getElementById('crewStatusCount');
   if (!listEl) return;
   listEl.innerHTML = '<span style="color:rgba(255,255,255,.3); font-size:.85rem;">Caricamento...</span>';
   try {
-    const res = await fetch(SHEETS_URL + '?boat=' + boat);
+    const res = await fetch(SHEETS_URL + '?boat=atlantica');
     const json = await res.json();
     const members = (json.members || []).filter(m => m.nome && m.nome.trim());
     if (members.length === 0) {
@@ -28,7 +28,7 @@ async function loadCrewStatus(boat, listId, countId) {
     listEl.innerHTML = members.map(m => {
       const ruolo = m.ruolo || '';
       const icon = ruolo.toLowerCase().includes('skipper') ? '⚓' : ruolo.toLowerCase().includes('co') ? '🧭' : '⛵';
-      return `<div style="display:flex; align-items:center; gap:8px; background:rgba(28,167,168,.12); border:1px solid rgba(28,167,168,.25); border-radius:10px; padding:8px 14px;">
+      return `<div style="display:flex; align-items:center; gap:8px; background:rgba(42,159,214,.12); border:1px solid rgba(42,159,214,.25); border-radius:10px; padding:8px 14px;">
         <span style="font-size:1rem;">${icon}</span>
         <div>
           <div style="font-size:.88rem; font-weight:600; color:#fff;">${m.nome}</div>
@@ -74,7 +74,7 @@ if (burger && mobileNav) {
 }
 
 /* ── Countdown ──────────────────────────────────── */
-const DEPARTURE = new Date('2026-06-26T17:00:00+02:00').getTime();
+const DEPARTURE = new Date('2026-06-27T17:00:00+02:00').getTime();
 function updateCountdown() {
   const cdDays  = document.getElementById('cdDays');
   if (!cdDays) return;
@@ -108,38 +108,17 @@ const revealObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0.12, rootMargin: '0px 0px -50px 0px' });
 
 document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right').forEach(el => {
-  // Skip hero content — handled by preloader callback
   if (!el.closest('#heroContent')) revealObserver.observe(el);
-});
-
-/* ── Meteo tabs ──────────────────────────────────── */
-document.querySelectorAll('.mr-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.mr-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.meteo-panel').forEach(p => p.classList.remove('active'));
-    tab.classList.add('active');
-    const panelId = 'panel-' + tab.dataset.route;
-    const panel = document.getElementById(panelId);
-    if (panel) {
-      panel.classList.add('active');
-      // Re-trigger reveals inside newly visible panel
-      panel.querySelectorAll('.reveal-up, .reveal-left, .reveal-right').forEach(el => {
-        el.classList.add('visible');
-      });
-    }
-  });
 });
 
 /* ── FAQ accordion ──────────────────────────────── */
 document.querySelectorAll('.faq-q').forEach(btn => {
   btn.addEventListener('click', () => {
     const expanded = btn.getAttribute('aria-expanded') === 'true';
-    // Close all
     document.querySelectorAll('.faq-q').forEach(b => {
       b.setAttribute('aria-expanded', 'false');
       b.nextElementSibling.classList.remove('open');
     });
-    // Open clicked if it was closed
     if (!expanded) {
       btn.setAttribute('aria-expanded', 'true');
       btn.nextElementSibling.classList.add('open');
@@ -158,56 +137,8 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
-/* ── Crew List — accettazione regole per barca (crewlist.html) ── */
-function toggleAccettaBoat(cb, boat) {
-  localStorage.setItem('regole_' + boat, cb.checked ? '1' : '');
-  const status = document.getElementById('accettaStatus-' + boat);
-  if (status) status.style.display = cb.checked ? 'block' : 'none';
-}
-
-/* ── Crew List — selezione barca ───────────────── */
-function selectBoat(boat) {
-  const boatNames = { lagoon: '⛵ Lagoon 40', oceanis: '⛵ Beneteau Oceanis 48' };
-  document.getElementById('crewBoatSelect').style.display = 'none';
-  const formArea = document.getElementById('crewFormArea');
-  formArea.style.display = 'block';
-  document.getElementById('crewFormTitle').textContent = boatNames[boat];
-  // mostra solo il pannello della barca scelta
-  document.querySelectorAll('.crew-panel').forEach(p => p.classList.remove('active'));
-  const panel = document.getElementById('crew-' + boat);
-  if (panel) panel.classList.add('active');
-  // carica dati salvati o aggiungi 1 membro vuoto
-  const container = document.getElementById('members-' + boat);
-  if (container && container.children.length === 0) {
-    const saved = loadFromStorage(boat);
-    if (saved.length > 0) {
-      saved.forEach(data => addMember(boat, data));
-      const btn = document.getElementById('btnSalva-' + boat);
-      if (btn) { btn.innerHTML = '✏️ Modifica i miei dati'; }
-    } else {
-      addMember(boat);
-    }
-  }
-  // ripristina stato checkbox regole
-  const accepted = localStorage.getItem('regole_' + boat) === '1';
-  const cb = document.getElementById('checkRegole-' + boat);
-  if (cb) cb.checked = accepted;
-  const st = document.getElementById('accettaStatus-' + boat);
-  if (st) st.style.display = accepted ? 'block' : 'none';
-  // carica dashboard stato equipaggio
-  loadCrewStatus(boat, 'crewStatusList-' + boat, 'crewStatusCount-' + boat);
-  // scroll smooth al form
-  formArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function backToBoatSelect() {
-  document.getElementById('crewFormArea').style.display = 'none';
-  document.getElementById('crewBoatSelect').style.display = 'block';
-  document.getElementById('crewBoatSelect').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-/* ── Crew member row template ─────────────────── */
-let memberCount = { lagoon: 0, oceanis: 0 };
+/* ── Crew List ──────────────────────────────────── */
+let memberCount = { atlantica: 0 };
 const CREW_FIELDS = ['nome','cognome','sesso','nascita','comuneNascita','provNascita','nazionalita','via','citta','prov','cap','tipoDoc','numDoc','scadDoc','ruolo','cf'];
 
 function saveToStorage(boat) {
@@ -230,7 +161,7 @@ function loadFromStorage(boat) {
 function addMember(boat, prefill) {
   const hint = document.getElementById('crewEmptyHint');
   if (hint) hint.style.display = 'none';
-  memberCount[boat]++;
+  memberCount[boat] = (memberCount[boat] || 0) + 1;
   const idx = memberCount[boat];
   const container = document.getElementById('members-' + boat);
   const row = document.createElement('div');
@@ -239,11 +170,11 @@ function addMember(boat, prefill) {
   row.innerHTML = `
     <div class="crew-field">
       <label>Nome <span style="color:#e05">*</span></label>
-      <input type="text" placeholder="Mario" data-field="nome" autocomplete="given-name" />
+      <input type="text" placeholder="Mario" data-field="nome" autocomplete="given-name" maxlength="50" />
     </div>
     <div class="crew-field">
       <label>Cognome <span style="color:#e05">*</span></label>
-      <input type="text" placeholder="Rossi" data-field="cognome" autocomplete="family-name" />
+      <input type="text" placeholder="Rossi" data-field="cognome" autocomplete="family-name" maxlength="50" />
     </div>
     <div class="crew-field">
       <label>Sesso <span style="color:#e05">*</span></label>
@@ -313,12 +244,11 @@ function addMember(boat, prefill) {
     </div>
     <div class="crew-field cf-field">
       <label>Codice Fiscale <span style="color:#e05">*</span></label>
-      <input type="text" placeholder="RSSMRA80A01H501U" data-field="cf" style="text-transform:uppercase" maxlength="16" pattern="[A-Z0-9]{16}" />
+      <input type="text" placeholder="RSSMRA80A01H501U" data-field="cf" style="text-transform:uppercase" maxlength="16" pattern="[A-Z0-9]{16}" inputmode="text" />
       <div data-cf-hint style="font-size:.72rem; margin-top:4px; min-height:16px;"></div>
     </div>
   `;
   container.appendChild(row);
-  // Prefill from saved data
   if (prefill) {
     CREW_FIELDS.forEach(f => {
       const el = row.querySelector(`[data-field="${f}"]`);
@@ -326,7 +256,6 @@ function addMember(boat, prefill) {
     });
     tryCalcCF(row);
   }
-  // Auto-calcolo CF e autosave
   const cfTriggers = ['nome','cognome','sesso','nascita','comuneNascita','cf'];
   const upperFields = ['cf','numDoc','prov','provNascita'];
   row.querySelectorAll('input, select').forEach(el => {
@@ -359,7 +288,7 @@ function tryCalcCF(row) {
   const inserito = (cfEl?.value || '').trim().toUpperCase();
   if (!inserito) {
     if (cfEl) cfEl.value = calcolato;
-    if (hint) { hint.textContent = '✅ CF calcolato automaticamente — verificalo'; hint.style.color = 'rgba(28,167,168,.9)'; }
+    if (hint) { hint.textContent = '✅ CF calcolato automaticamente — verificalo'; hint.style.color = 'rgba(42,159,214,.9)'; }
   } else if (inserito === calcolato) {
     if (hint) { hint.textContent = '✅ Codice fiscale corretto'; hint.style.color = '#25D366'; }
   } else {
@@ -378,86 +307,58 @@ function calcolaCodiceFiscale(cognome, nome, sesso, nascitaISO, luogo) {
     if (!codLuogo) return null;
     const base = (codCognome + codNome + codData + codLuogo).toUpperCase();
     if (base.length !== 15) return null;
-    const controllo = _cfControllo(base);
-    return base + controllo;
+    return base + _cfControllo(base);
   } catch(e) { return null; }
 }
-
 function _cfConsonanti(s, n) {
   s = s.toUpperCase().replace(/[^A-Z]/g,'');
-  const cons = s.replace(/[AEIOU]/g,'');
-  const voc  = s.replace(/[^AEIOU]/g,'');
-  return (cons + voc + 'XXX').slice(0, n);
+  return (s.replace(/[AEIOU]/g,'') + s.replace(/[^AEIOU]/g,'') + 'XXX').slice(0,n);
 }
-
 function _cfNome(s) {
   s = s.toUpperCase().replace(/[^A-Z]/g,'');
   const cons = s.replace(/[AEIOU]/g,'');
-  const voc  = s.replace(/[^AEIOU]/g,'');
-  if (cons.length >= 4) return cons[0] + cons[2] + cons[3];
-  return (cons + voc + 'XXX').slice(0, 3);
+  if (cons.length >= 4) return cons[0]+cons[2]+cons[3];
+  return (cons + s.replace(/[^AEIOU]/g,'') + 'XXX').slice(0,3);
 }
-
-const _BELFIORE = {}; // popolato sotto
-function _cfLuogo(luogo) {
-  const key = luogo.toUpperCase().trim();
-  return _BELFIORE[key] || null;
-}
-
+const _BELFIORE = {};
+function _cfLuogo(luogo) { return _BELFIORE[luogo.toUpperCase().trim()] || null; }
 function _cfControllo(base) {
-  const odd  = [1,0,5,7,9,13,15,17,19,21,2,4,18,20,11,3,6,8,12,14,16,10,22,25,24,23];
-  let s = 0;
-  for (let i = 0; i < 15; i++) {
-    const c = base.charCodeAt(i);
-    const v = c >= 48 && c <= 57 ? c - 48 : c - 65;
-    s += (i % 2 === 0) ? odd[v] : v;
-  }
-  return String.fromCharCode(65 + (s % 26));
+  const odd=[1,0,5,7,9,13,15,17,19,21,2,4,18,20,11,3,6,8,12,14,16,10,22,25,24,23];
+  let s=0;
+  for(let i=0;i<15;i++){const c=base.charCodeAt(i);const v=c>=48&&c<=57?c-48:c-65;s+=(i%2===0)?odd[v]:v;}
+  return String.fromCharCode(65+(s%26));
 }
-
-// Tabella Belfiore — comuni principali (estendibile)
 (function(){
-  const T = {
-    'AGRIGENTO':'G273','ALESSANDRIA':'A182','ANCONA':'A271','AOSTA':'A326',
-    'AREZZO':'A390','ASCOLI PICENO':'A462','ASTI':'A479','AVELLINO':'A509',
-    'BARI':'A662','BARLETTA':'A669','BELLUNO':'A757','BENEVENTO':'A783',
-    'BERGAMO':'A794','BIELLA':'A859','BOLOGNA':'A944','BOLZANO':'A952',
-    'BRESCIA':'B157','BRINDISI':'B180','CAGLIARI':'B354','CALTANISSETTA':'B429',
-    'CAMPOBASSO':'B519','CASERTA':'B963','CATANIA':'C351','CATANZARO':'C352',
-    'CHIETI':'C469','COMO':'C933','COSENZA':'D086','CREMONA':'D150',
-    'CROTONE':'D122','CUNEO':'D205','ENNA':'C342','FERMO':'D542',
-    'FERRARA':'D548','FIRENZE':'D612','FOGGIA':'D643','FORLÌ':'D704',
-    'FROSINONE':'D810','GENOVA':'D969','GORIZIA':'E098','GROSSETO':'E202',
-    'IMPERIA':'E290','ISERNIA':'E335','L\'AQUILA':'A345','LA SPEZIA':'E463',
-    'LATINA':'E472','LECCE':'E506','LECCO':'E507','LIVORNO':'E625',
-    'LODI':'E648','LUCCA':'E715','MACERATA':'E783','MANTOVA':'E897',
-    'MASSA':'F023','MATERA':'F052','MESSINA':'F158','MILANO':'F205',
-    'MODENA':'F257','MONZA':'F704','NAPOLI':'F839','NOVARA':'F952',
-    'NUORO':'F979','ORISTANO':'G113','PADOVA':'G224','PALERMO':'G273',
-    'PARMA':'G337','PAVIA':'G388','PERUGIA':'G478','PESARO':'G453',
-    'PESCARA':'G482','PIACENZA':'G535','PISA':'G702','PISTOIA':'G713',
-    'PORDENONE':'G888','POTENZA':'G942','PRATO':'G999','RAGUSA':'H163',
-    'RAVENNA':'H199','REGGIO CALABRIA':'H224','REGGIO EMILIA':'H236',
-    'RIETI':'H282','RIMINI':'H294','ROMA':'H501','ROVIGO':'H620',
-    'SALERNO':'H703','SASSARI':'I452','SAVONA':'I480','SIENA':'I726',
-    'SIRACUSA':'I754','SONDRIO':'I829','SUD SARDEGNA':'M209','TARANTO':'L049',
-    'TERAMO':'L103','TERNI':'L117','TORINO':'L219','TRAPANI':'L331',
-    'TRENTO':'L378','TREVISO':'L407','TRIESTE':'L424','UDINE':'L483',
-    'VARESE':'L682','VENEZIA':'L736','VERBANIA':'L746','VERCELLI':'L750',
-    'VERONA':'L781','VIBO VALENTIA':'F537','VICENZA':'L840','VITERBO':'M082',
-    'LERICI':'E542','PORTOVENERE':'G927','LA SPEZIA':'E463','SARZANA':'I449',
-    'AMEGLIA':'A259','ARCOLA':'A370','BOLANO':'A930','CALICE AL CORNOVIGLIO':'B410',
-    'FOLLO':'D655','ORTONOVO':'G145','RICCÒ DEL GOLFO':'H275','SANTO STEFANO DI MAGRA':'I367',
-    'VEZZANO LIGURE':'L820','ZIGNAGO':'M177'
+  const T={
+    'AGRIGENTO':'G273','ALESSANDRIA':'A182','ANCONA':'A271','AOSTA':'A326','AREZZO':'A390',
+    'ASCOLI PICENO':'A462','ASTI':'A479','AVELLINO':'A509','BARI':'A662','BELLUNO':'A757',
+    'BENEVENTO':'A783','BERGAMO':'A794','BIELLA':'A859','BOLOGNA':'A944','BOLZANO':'A952',
+    'BRESCIA':'B157','BRINDISI':'B180','CAGLIARI':'B354','CAMPOBASSO':'B519','CASERTA':'B963',
+    'CATANIA':'C351','CATANZARO':'C352','CHIETI':'C469','COMO':'C933','COSENZA':'D086',
+    'CREMONA':'D150','CUNEO':'D205','FERRARA':'D548','FIRENZE':'D612','FOGGIA':'D643',
+    'FROSINONE':'D810','GENOVA':'D969','GROSSETO':'E202','IMPERIA':'E290','LA SPEZIA':'E463',
+    'LATINA':'E472','LECCE':'E506','LECCO':'E507','LIVORNO':'E625','LUCCA':'E715',
+    'MACERATA':'E783','MANTOVA':'E897','MASSA':'F023','MATERA':'F052','MESSINA':'F158',
+    'MILANO':'F205','MODENA':'F257','MONZA':'F704','NAPOLI':'F839','NOVARA':'F952',
+    'PADOVA':'G224','PALERMO':'G273','PARMA':'G337','PAVIA':'G388','PERUGIA':'G478',
+    'PESCARA':'G482','PIACENZA':'G535','PISA':'G702','PISTOIA':'G713','POTENZA':'G942',
+    'PRATO':'G999','RAGUSA':'H163','RAVENNA':'H199','REGGIO CALABRIA':'H224',
+    'REGGIO EMILIA':'H236','RIETI':'H282','RIMINI':'H294','ROMA':'H501','ROVIGO':'H620',
+    'SALERNO':'H703','SASSARI':'I452','SAVONA':'I480','SIENA':'I726','SIRACUSA':'I754',
+    'SONDRIO':'I829','TARANTO':'L049','TERAMO':'L103','TERNI':'L117','TORINO':'L219',
+    'TRAPANI':'L331','TRENTO':'L378','TREVISO':'L407','TRIESTE':'L424','UDINE':'L483',
+    'VARESE':'L682','VENEZIA':'L736','VERONA':'L781','VICENZA':'L840','VITERBO':'M082',
+    'LERICI':'E542','PORTOVENERE':'G927','SARZANA':'I449','SPEZIA':'E463',
+    'AMEGLIA':'A259','ARCOLA':'A370','BOLANO':'A930','FOLLO':'D655',
+    'SANTO STEFANO DI MAGRA':'I367','VEZZANO LIGURE':'L820'
   };
-  Object.assign(_BELFIORE, T);
+  Object.assign(_BELFIORE,T);
 })();
 
 function removeMember(boat, idx) {
   const row = document.getElementById(`member-${boat}-${idx}`);
   if (row) { row.remove(); saveToStorage(boat); }
 }
-
 
 /* ── Triple-click sul contatore → sblocca bottone admin ── */
 const _counterClicks = {};
@@ -496,9 +397,9 @@ async function saveMemberToSheets(boat) {
   if (!nascita) mancanti.push('Data di Nascita');
   if (!comuneNascita) mancanti.push('Comune di Nascita');
   if (!get('nazionalita')) mancanti.push('Nazionalità');
-  if (!get('via'))   mancanti.push('Indirizzo di Residenza');
+  if (!get('via'))  mancanti.push('Indirizzo di Residenza');
   if (!get('citta')) mancanti.push('Città di Residenza');
-  if (!get('cap'))   mancanti.push('CAP');
+  if (!get('cap'))  mancanti.push('CAP');
   if (!tipoDoc) mancanti.push('Tipo Documento');
   if (!numDoc)  mancanti.push('N° Documento');
   if (!get('scadDoc')) mancanti.push('Scadenza Documento');
@@ -513,7 +414,7 @@ async function saveMemberToSheets(boat) {
     return;
   }
   if (numDoc.length < 6) { alert('Numero documento non valido — deve contenere almeno 6 caratteri.'); return; }
-  if (nome.length < 2)    { alert('Nome troppo corto — verifica di aver inserito il nome completo.'); return; }
+  if (nome.length < 2) { alert('Nome troppo corto — verifica di aver inserito il nome completo.'); return; }
   if (cognome.length < 2) { alert('Cognome troppo corto — verifica di aver inserito il cognome completo.'); return; }
 
   const btn = document.getElementById('btnSalva-' + boat);
@@ -575,6 +476,7 @@ async function saveMemberToSheets(boat) {
     statusEl2.style.textAlign = 'center';
   }
   if (btn) { btn.textContent = '✅ Dati salvati!'; btn.style.background = 'var(--turq)'; btn.disabled = false; }
+  loadCrewStatus();
 }
 
 /* ── Mostra di nuovo il form dopo il salvataggio ── */
@@ -612,12 +514,12 @@ function generateCrewPDF(members, boatName, departureDate, arrivalDate) {
     <tr>
       <td class="num">${i + 1}</td>
       <td class="name">${m.nome || '—'}</td>
-      <td>${m.nascita ? new Date(m.nascita).toLocaleDateString('it-IT') : (m.nascita || '—')}</td>
+      <td>${m.nascita || '—'}</td>
       <td>${m.luogo || '—'}</td>
       <td>${m.nazionalita || '—'}</td>
       <td>${m.tipoDoc || '—'}</td>
       <td>${m.numDoc || '—'}</td>
-      <td>${m.scadDoc ? new Date(m.scadDoc).toLocaleDateString('it-IT') : (m.scadDoc || '—')}</td>
+      <td>${m.scadDoc || '—'}</td>
       <td>${m.ruolo || '—'}</td>
     </tr>`).join('');
 
@@ -659,23 +561,23 @@ function generateCrewPDF(members, boatName, departureDate, arrivalDate) {
   <div class="doc-header">
     <div class="doc-title">
       <h1>CREW LIST — LISTA EQUIPAGGIO</h1>
-      <p>Documento richiesto per navigazione in acque straniere &nbsp;·&nbsp; Art. 184 Codice della Navigazione</p>
+      <p>Golfo dei Poeti Weekend · Porto Mirabello, La Spezia · 26–27 Giugno 2026</p>
     </div>
     <div class="doc-flag">🇮🇹</div>
   </div>
   <div class="vessel-grid">
-    <div class="vessel-cell"><div class="vc-label">Nome Imbarcazione</div><div class="vc-val">${boatName}</div></div>
-    <div class="vessel-cell"><div class="vc-label">Bandiera</div><div class="vc-val">Italiana</div></div>
+    <div class="vessel-cell"><div class="vc-label">Nome Imbarcazione</div><div class="vc-val">Atlantica</div></div>
+    <div class="vessel-cell"><div class="vc-label">Tipo / Modello</div><div class="vc-val">Beneteau Oceanis 45</div></div>
     <div class="vessel-cell"><div class="vc-label">Porto di Iscrizione</div><div class="vc-val">La Spezia</div></div>
     <div class="vessel-cell"><div class="vc-label">Comandante / Skipper</div><div class="vc-val">${skipper?.nome || '—'}</div></div>
   </div>
   <div class="voyage-grid">
     <div class="voyage-cell"><div class="vc-label">Porto di Partenza</div><div class="vc-val">Porto Mirabello, La Spezia</div></div>
-    <div class="voyage-cell"><div class="vc-label">Data Partenza</div><div class="vc-val">${departureDate}</div></div>
-    <div class="voyage-cell"><div class="vc-label">Porto di Arrivo</div><div class="vc-val">Porto Mirabello, La Spezia</div></div>
-    <div class="voyage-cell"><div class="vc-label">Data Arrivo</div><div class="vc-val">${arrivalDate}</div></div>
+    <div class="voyage-cell"><div class="vc-label">Data Check-in</div><div class="vc-val">${departureDate}</div></div>
+    <div class="voyage-cell"><div class="vc-label">Porto di Rientro</div><div class="vc-val">Porto Mirabello, La Spezia</div></div>
+    <div class="voyage-cell"><div class="vc-label">Data Check-out</div><div class="vc-val">${arrivalDate}</div></div>
   </div>
-  <div class="section-title">Composizione Equipaggio &nbsp;·&nbsp; ${members.length} persone a bordo</div>
+  <div class="section-title">Composizione Equipaggio · ${members.length} persone a bordo</div>
   <table>
     <thead><tr>
       <th>#</th><th>Cognome e Nome</th><th>Data di Nascita</th><th>Luogo di Nascita</th>
@@ -689,7 +591,7 @@ function generateCrewPDF(members, boatName, departureDate, arrivalDate) {
     <div class="sig-item"><div class="sig-label">Data e Luogo</div><div class="sig-name">La Spezia, ${new Date().toLocaleDateString('it-IT')}</div></div>
   </div>
   <div class="doc-footer">
-    <span>Corsica Sailing Experience &nbsp;·&nbsp; Porto Mirabello, La Spezia &nbsp;·&nbsp; +39 351 844 7888</span>
+    <span>Golfo dei Poeti Weekend · Porto Mirabello, La Spezia · +39 351 844 7888</span>
     <span>Generato il ${new Date().toLocaleDateString('it-IT',{day:'2-digit',month:'long',year:'numeric'})}</span>
   </div>
 </div>
@@ -697,7 +599,6 @@ function generateCrewPDF(members, boatName, departureDate, arrivalDate) {
 </body></html>`);
   win.document.close();
 }
-
 
 /* ── Floating particles in hero ─────────────────── */
 (function spawnParticles() {
@@ -719,7 +620,6 @@ function generateCrewPDF(members, boatName, departureDate, arrivalDate) {
     `;
     container.appendChild(p);
   }
-  // inject keyframes once
   if (!document.getElementById('particleKF')) {
     const s = document.createElement('style');
     s.id = 'particleKF';
@@ -733,4 +633,27 @@ function generateCrewPDF(members, boatName, departureDate, arrivalDate) {
     `;
     document.head.appendChild(s);
   }
+})();
+
+/* ── Dropdown nav ─────────────────────────────────── */
+(function() {
+  const dd = document.getElementById('navDropdown');
+  if (!dd) return;
+  const toggle = dd.querySelector('.dropdown-toggle');
+  const menu   = dd.querySelector('.dropdown-menu');
+  if (!toggle || !menu) return;
+
+  toggle.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dd.classList.toggle('open');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!dd.contains(e.target)) dd.classList.remove('open');
+  });
+
+  menu.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => dd.classList.remove('open'));
+  });
 })();
